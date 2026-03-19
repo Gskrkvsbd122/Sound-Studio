@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0a1a" />
+  <meta name="description" content="8D Audio Converter - Apna music 8D mein sunein" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.svg" />
+  <title>8D Audio Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #06060f;
+      --surface: #0e0e22;
+      --card: #13132a;
+      --border: #1e1e40;
+      --accent1: #7c3aed;
+      --accent2: #06b6d4;
+      --accent3: #f472b6;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --glow1: rgba(124, 58, 237, 0.4);
+      --glow2: rgba(6, 182, 212, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(124,58,237,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(6,182,212,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(244,114,182,0.06) 0%, transparent 60%);
+      z-index: 0;
+      animation: bgShift 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgShift {
+      0% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px 16px 100px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 40px 0 30px;
+    }
+
+    .logo-ring {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-ring::before, .logo-ring::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid transparent;
+    }
+
+    .logo-ring::before {
+      border-top-color: var(--accent1);
+      border-right-color: var(--accent1);
+      animation: spin 3s linear infinite;
+    }
+
+    .logo-ring::after {
+      border-bottom-color: var(--accent2);
+      border-left-color: var(--accent2);
+      animation: spin 2s linear infinite reverse;
+      inset: 8px;
+    }
+
+    .logo-inner {
+      width: 54px;
+      height: 54px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      font-weight: 900;
+      color: white;
+      box-shadow: 0 0 30px var(--glow1);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(22px, 6vw, 32px);
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 50%, var(--accent3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+
+    /* Install banner */
+    #install-banner {
+      display: none;
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.2));
+      border: 1px solid var(--accent1);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    #install-banner:hover { background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(6,182,212,0.3)); }
+    #install-banner .install-icon { font-size: 24px; }
+    #install-banner p { flex: 1; font-size: 14px; line-height: 1.4; }
+    #install-banner p strong { color: var(--accent2); display: block; }
+    #install-banner .install-btn {
+      background: var(--accent1);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent1), var(--accent2), transparent);
+    }
+
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent2);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* File Upload */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent1);
+      background: rgba(124,58,237,0.05);
+    }
+
+    .upload-zone input { display: none; }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
+      filter: drop-shadow(0 0 10px var(--glow1));
+    }
+
+    .upload-text { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+    .upload-sub { font-size: 13px; color: var(--muted); }
+
+    /* Visualizer */
+    #visualizer-wrap {
+      display: none;
+      margin: 16px 0;
+    }
+
+    canvas#visualizer {
+      width: 100%;
+      height: 80px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.3);
+    }
+
+    /* Now playing */
+    #now-playing {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 14px;
+      margin-bottom: 16px;
+    }
+
+    .track-art {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent3));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      animation: trackPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes trackPulse {
+      0%, 100% { box-shadow: 0 0 10px var(--glow1); }
+      50% { box-shadow: 0 0 25px var(--glow1), 0 0 50px var(--glow2); }
+    }
+
+    .track-info { flex: 1; overflow: hidden; }
+    .track-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-status { font-size: 12px; color: var(--accent2); letter-spacing: 1px; }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .btn-play {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--glow1);
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .btn-play:hover { transform: scale(1.08); box-shadow: 0 0 35px var(--glow1); }
+    .btn-play:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .progress-wrap { flex: 1; }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      margin-bottom: 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.1s;
+      pointer-events: none;
+    }
+
+    .time-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+    /* Sliders */
+    .slider-group { margin-bottom: 16px; }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .slider-label span:first-child { color: var(--muted); }
+    .slider-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      color: var(--accent2);
+      min-width: 40px;
+      text-align: right;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 4px;
+      background: var(--border);
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--glow1);
+    }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .toggle-info h4 { font-size: 14px; font-weight: 600; }
+    .toggle-info p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .toggle {
+      width: 48px;
+      height: 26px;
+      background: var(--border);
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+      flex-shrink: 0;
+      border: none;
+    }
+
+    .toggle.on { background: linear-gradient(135deg, var(--accent1), var(--accent2)); }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .toggle.on::after { transform: translateX(22px); }
+
+    /* Status */
+    #status-bar {
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-top: 8px;
+      transition: all 0.3s;
+    }
+
+    #status-bar.info { background: rgba(6,182,212,0.1); color: var(--accent2); border: 1px solid rgba(6,182,212,0.2); }
+    #status-bar.success { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+    #status-bar.warn { background: rgba(124,58,237,0.1); color: var(--accent3); border: 1px solid rgba(124,58,237,0.2); }
+
+    /* Headphone reminder */
+    .headphone-tip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: rgba(244,114,182,0.08);
+      border: 1px solid rgba(244,114,182,0.2);
+      border-radius: 12px;
+      font-size: 13px;
+      color: var(--accent3);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* Orbit animation for 8D indicator */
+    .d8-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.2));
+      border: 1px solid var(--accent1);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: var(--accent2);
+    }
+
+    .d8-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent2);
+      border-radius: 50%;
+      animation: blink 1s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    @media (max-width: 400px) {
+      .card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-overlay"></div>
+
+  <div class="container">
+    <header>
+      <div class="logo-ring">
+        <div class="logo-inner">8D</div>
+      </div>
+      <h1>8D AUDIO STUDIO</h1>
+      <p class="subtitle">Spatial Sound Experience</p>
+    </header>
+
+    <!-- Install Banner -->
+    <div id="install-banner">
+      <span class="install-icon">📲</span>
+      <p><strong>App Install Karein</strong> Home screen pe add karein aur offline use karein</p>
+      <button class="install-btn" onclick="installPWA()">INSTALL</button>
+    </div>
+
+    <!-- Headphone Tip -->
+    <div class="headphone-tip" style="margin-bottom:16px;">
+      🎧 <span><strong>Headphones zaroori hain</strong> — 8D effect sirf earphones/headphones mein feel hota hai</span>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="card">
+      <div class="card-title">🎵 Song Upload Karein</div>
+      <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="audio/*" />
+        <span class="upload-icon">🎶</span>
+        <div class="upload-text">Yahan click karein ya file drop karein</div>
+        <div class="upload-sub">MP3, WAV, OGG, M4A — Koi bhi audio file</div>
+      </div>
+    </div>
+
+    <!-- Player Card -->
+    <div class="card" id="player-card" style="display:none">
+      <div class="card-title">▶ NOW PLAYING</div>
+
+      <div id="now-playing" style="display:flex">
+        <div class="track-art">🎵</div>
+        <div class="track-info">
+          <div class="track-name" id="track-name">—</div>
+          <div class="d8-badge" style="margin-top:6px;">
+            <div class="d8-dot"></div>
+            <span id="effect-label">8D ACTIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="visualizer-wrap">
+        <canvas id="visualizer"></canvas>
+      </div>
+
+      <div class="controls">
+        <button class="btn-play" id="play-btn" disabled onclick="togglePlay()">▶</button>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="progress-bar" onclick="seekAudio(event)">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="time-row">
+            <span id="time-current">0:00</span>
+            <span id="time-total">0:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="status-bar" class="info">File load ho rahi hai...</div>
+    </div>
+
+    <!-- 8D Settings Card -->
+    <div class="card">
+      <div class="card-title">⚙️ 8D Settings</div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <h4>🌀 8D Rotation Effect</h4>
+          <p>Audio left-right ghoomta rahega</p>
+        </div>
+        <button class="toggle on" id="toggle-8d" onclick="toggle8D()"></button>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <h4>🌊 Reverb (Hall Effect)</h4>
+          <p>Concert hall jaisi awaaz</p>
+        </div>
+        <button class="toggle on" id="toggle-reverb" onclick="toggleReverb()"></button>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <h4>🔊 Bass Boost</h4>
+          <p>Gehra bass effect</p>
+        </div>
+        <button class="toggle" id="toggle-bass" onclick="toggleBass()"></button>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>🔄 Rotation Speed</span>
+            <span class="slider-value" id="speed-val">Medium</span>
+          </div>
+          <input type="range" id="rotation-speed" min="1" max="5" value="3" step="1" oninput="updateSpeed(this.value)" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>🌐 Rotation Depth</span>
+            <span class="slider-value" id="depth-val">70%</span>
+          </div>
+          <input type="range" id="rotation-depth" min="10" max="100" value="70" oninput="updateDepth(this.value)" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>🔊 Volume</span>
+            <span class="slider-value" id="vol-val">80%</span>
+          </div>
+          <input type="range" id="volume" min="0" max="100" value="80" oninput="updateVolume(this.value)" />
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>8D Audio Studio &copy; 2025</p>
+      <p style="margin-top:4px; color: #2d2d5e;">Web Audio API Powered</p>
+    </footer>
+  </div>
+
+  <script>
+    // ===== PWA INSTALL =====
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('install-banner').style.display = 'flex';
+    });
+
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+          document.getElementById('install-banner').style.display = 'none';
+        });
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    // ===== AUDIO ENGINE =====
+    let audioCtx = null;
+    let sourceNode = null;
+    let pannerNode = null;
+    let reverbNode = null;
+    let bassNode = null;
+    let gainNode = null;
+    let analyser = null;
+    let audioBuffer = null;
+    let startTime = 0;
+    let pausedAt = 0;
+    let isPlaying = false;
+    let animFrame = null;
+    let rotationFrame = null;
+    let panAngle = 0;
+
+    // Settings
+    let settings = {
+      enable8D: true,
+      enableReverb: true,
+      enableBass: false,
+      speed: 3,
+      depth: 0.7,
+      volume: 0.8
+    };
+
+    const speedMap = { 1:'Slow', 2:'Slow+', 3:'Medium', 4:'Fast', 5:'Very Fast' };
+    const speedHz  = { 1:0.05, 2:0.1, 3:0.2, 4:0.35, 5:0.55 };
+
+    function initAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    async function createReverbIR(ctx, seconds = 2.5, decay = 2.5) {
+      const rate = ctx.sampleRate;
+      const length = rate * seconds;
+      const impulse = ctx.createBuffer(2, length, rate);
+      for (let c = 0; c < 2; c++) {
+        const data = impulse.getChannelData(c);
+        for (let i = 0; i < length; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+        }
+      }
+      return impulse;
+    }
+
+    async function buildGraph() {
+      if (!audioCtx || !audioBuffer) return;
+
+      // Panner (8D)
+      pannerNode = audioCtx.createPanner();
+      pannerNode.panningModel = 'HRTF';
+      pannerNode.distanceModel = 'inverse';
+      pannerNode.refDistance = 1;
+      pannerNode.maxDistance = 10000;
+      pannerNode.rolloffFactor = 1;
+
+      // Reverb
+      reverbNode = audioCtx.createConvolver();
+      reverbNode.buffer = await createReverbIR(audioCtx);
+
+      const dryGain = audioCtx.createGain(); dryGain.gain.value = 0.7;
+      const wetGain = audioCtx.createGain(); wetGain.gain.value = settings.enableReverb ? 0.5 : 0;
+
+      // Bass
+      bassNode = audioCtx.createBiquadFilter();
+      bassNode.type = 'lowshelf';
+      bassNode.frequency.value = 200;
+      bassNode.gain.value = settings.enableBass ? 8 : 0;
+
+      // Gain
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = settings.volume;
+
+      // Analyser
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+
+      // Connect graph
+      // source → panner → bassNode → dryGain → gainNode → analyser → dest
+      //                            → reverbNode → wetGain ↗
+      sourceNode.connect(pannerNode);
+      pannerNode.connect(bassNode);
+      bassNode.connect(dryGain);
+      bassNode.connect(reverbNode);
+      reverbNode.connect(wetGain);
+      dryGain.connect(gainNode);
+      wetGain.connect(gainNode);
+      gainNode.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      // Store refs for live control
+      window._wetGain = wetGain;
+      window._dryGain = dryGain;
+    }
+
+    // ===== FILE LOAD =====
+    document.getElementById('file-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) loadFile(file);
+    });
+
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('audio/')) loadFile(file);
+    });
+
+    function loadFile(file) {
+      stopAudio();
+      initAudioCtx();
+      setStatus('Loading...', 'info');
+      document.getElementById('player-card').style.display = 'block';
+      document.getElementById('track-name').textContent = file.name.replace(/\.[^.]+$/, '');
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          audioBuffer = await audioCtx.decodeAudioData(e.target.result);
+          document.getElementById('play-btn').disabled = false;
+          document.getElementById('time-total').textContent = fmtTime(audioBuffer.duration);
+          document.getElementById('visualizer-wrap').style.display = 'block';
+          setStatus('✅ Ready — Play dabayein! (Headphones lagayein)', 'success');
+          playAudio();
+        } catch (err) {
+          setStatus('❌ File load nahi hua. Doosri file try karein.', 'warn');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ===== PLAYBACK =====
+    function playAudio() {
+      if (!audioBuffer || !audioCtx) return;
+      stopRotation();
+
+      sourceNode = audioCtx.createBufferSource();
+      sourceNode.buffer = audioBuffer;
+      sourceNode.loop = false;
+
+      buildGraph().then(() => {
+        sourceNode.start(0, pausedAt);
+        startTime = audioCtx.currentTime - pausedAt;
+        isPlaying = true;
+        document.getElementById('play-btn').textContent = '⏸';
+        startRotation();
+        updateProgressLoop();
+        drawVisualizer();
+        setStatus('🎧 8D Audio chal raha hai...', 'info');
+        sourceNode.onended = () => {
+          if (isPlaying) {
+            pausedAt = 0;
+            isPlaying = false;
+            document.getElementById('play-btn').textContent = '▶';
+            document.getElementById('progress-fill').style.width = '0%';
+            setStatus('✅ Song khatam. Dobara play karein!', 'success');
+            stopRotation();
+          }
+        };
+      });
+    }
+
+    function stopAudio() {
+      if (sourceNode) {
+        try { sourceNode.stop(); } catch(e) {}
+        sourceNode = null;
+      }
+      isPlaying = false;
+      pausedAt = 0;
+      cancelAnimationFrame(animFrame);
+      stopRotation();
+    }
+
+    function togglePlay() {
+      initAudioCtx();
+      if (isPlaying) {
+        pausedAt = audioCtx.currentTime - startTime;
+        if (sourceNode) { try { sourceNode.stop(); } catch(e) {} sourceNode = null; }
+        isPlaying = false;
+        document.getElementById('play-btn').textContent = '▶';
+        cancelAnimationFrame(animFrame);
+        stopRotation();
+        setStatus('⏸ Paused', 'warn');
+      } else {
+        playAudio();
+      }
+    }
+
+    function seekAudio(e) {
+      if (!audioBuffer) return;
+      const bar = document.getElementById('progress-bar');
+      const ratio = e.offsetX / bar.offsetWidth;
+      const seekTo = ratio * audioBuffer.duration;
+      const wasPlaying = isPlaying;
+      if (isPlaying) {
+        if (sourceNode) { try { sourceNode.stop(); } catch(e) {} sourceNode = null; }
+        isPlaying = false;
+        stopRotation();
+      }
+      pausedAt = seekTo;
+      if (wasPlaying) playAudio();
+    }
+
+    // ===== 8D ROTATION =====
+    let rotationInterval = null;
+    function startRotation() {
+      stopRotation();
+      if (!settings.enable8D || !pannerNode) return;
+      const hz = speedHz[settings.speed];
+      const step = hz * 20 * Math.PI / 180;
+      rotationInterval = setInterval(() => {
+        if (!pannerNode || !settings.enable8D) return;
+        panAngle += step;
+        const depth = settings.depth * 5;
+        const x = Math.sin(panAngle) * depth;
+        const z = Math.cos(panAngle) * depth;
+        try {
+          pannerNode.setPosition(x, 0, z);
+          pannerNode.setOrientation(0, 0, 1);
+        } catch(e) {}
+      }, 20);
+    }
+
+    function stopRotation() {
+      if (rotationInterval) { clearInterval(rotationInterval); rotationInterval = null; }
+      if (pannerNode) { try { pannerNode.setPosition(0, 0, 1); } catch(e) {} }
+    }
+
+    // ===== VISUALIZER =====
+    function drawVisualizer() {
+      if (!analyser) return;
+      const canvas = document.getElementById('visualizer');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth * devicePixelRatio;
+      canvas.height = canvas.offsetHeight * devicePixelRatio;
+      const W = canvas.width, H = canvas.height;
+      const bufLen = analyser.frequencyBinCount;
+      const dataArr = new Uint8Array(bufLen);
+
+      function draw() {
+        animFrame = requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArr);
+        ctx.clearRect(0, 0, W, H);
+
+        const barW = W / bufLen * 2.5;
+        let x = 0;
+        for (let i = 0; i < bufLen; i++) {
+          const v = dataArr[i] / 255;
+          const barH = v * H;
+          const hue = 260 + v * 80;
+          ctx.fillStyle = `hsla(${hue}, 80%, 60%, 0.85)`;
+          ctx.fillRect(x, H - barH, barW - 1, barH);
+          x += barW;
+        }
+      }
+      draw();
+    }
+
+    // ===== PROGRESS =====
+    function updateProgressLoop() {
+      function loop() {
+        if (!isPlaying || !audioBuffer || !audioCtx) return;
+        const elapsed = audioCtx.currentTime - startTime;
+        const pct = Math.min(elapsed / audioBuffer.duration * 100, 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('time-current').textContent = fmtTime(elapsed);
+        animFrame = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    function fmtTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return m + ':' + (sec < 10 ? '0' : '') + sec;
+    }
+
+    function setStatus(msg, type) {
+      const el = document.getElementById('status-bar');
+      el.textContent = msg;
+      el.className = type;
+    }
+
+    // ===== TOGGLES =====
+    function toggle8D() {
+      settings.enable8D = !settings.enable8D;
+      document.getElementById('toggle-8d').classList.toggle('on', settings.enable8D);
+      document.getElementById('effect-label').textContent = settings.enable8D ? '8D ACTIVE' : 'STEREO';
+      if (settings.enable8D && isPlaying) startRotation();
+      else stopRotation();
+    }
+
+    function toggleReverb() {
+      settings.enableReverb = !settings.enableReverb;
+      document.getElementById('toggle-reverb').classList.toggle('on', settings.enableReverb);
+      if (window._wetGain) window._wetGain.gain.value = settings.enableReverb ? 0.5 : 0;
+    }
+
+    function toggleBass() {
+      settings.enableBass = !settings.enableBass;
+      document.getElementById('toggle-bass').classList.toggle('on', settings.enableBass);
+      if (bassNode) bassNode.gain.value = settings.enableBass ? 8 : 0;
+    }
+
+    // ===== SLIDERS =====
+    function updateSpeed(v) {
+      settings.speed = parseInt(v);
+      document.getElementById('speed-val').textContent = speedMap[settings.speed];
+      if (isPlaying) startRotation();
+    }
+
+    function updateDepth(v) {
+      settings.depth = v / 100;
+      document.getElementById('depth-val').textContent = v + '%';
+    }
+
+    function updateVolume(v) {
+      settings.volume = v / 100;
+      document.getElementById('vol-val').textContent = v + '%';
+      if (gainNode) gainNode.gain.value = settings.volume;
+    }
+  </script>
+</body>
+</html>
