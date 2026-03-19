@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="ring2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:0"/>
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="192" height="192" rx="40" fill="#06060f"/>
+  <!-- Outer ring -->
+  <circle cx="96" cy="96" r="80" fill="none" stroke="url(#ring1)" stroke-width="3" stroke-dasharray="120 140"/>
+  <circle cx="96" cy="96" r="80" fill="none" stroke="url(#ring2)" stroke-width="3" stroke-dasharray="120 140" stroke-dashoffset="130"/>
+  <!-- Middle ring -->
+  <circle cx="96" cy="96" r="65" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="50 60" opacity="0.4"/>
+  <!-- Inner circle -->
+  <circle cx="96" cy="96" r="52" fill="url(#bg)" opacity="0.9"/>
+  <!-- 8D text -->
+  <text x="96" y="108" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="36" font-weight="900" fill="white" letter-spacing="-1">8D</text>
+</svg>
